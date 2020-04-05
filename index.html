@@ -1,0 +1,28 @@
+
+<title>Java Script Test</title>
+
+<!DOCTYPE html>
+<html>
+   <body>   
+    <form action="./action_page.php">
+        First name: <input type="text" name="fname"><br>
+        Last name: <input type="text" name="lname"><br>
+        <input type="submit" onclick = "fnFullName(fname,lname)" value="Submit">
+        <p id="pFullName">Full Name</p>
+    </form>
+
+    <script language = "javascript" type = "text/javascript">
+
+        function fnFullName(fname,lname) {
+            document.getElementById("pFullName").innerHTML = string.concat(fname ," ", lname);
+        }
+    </script>      
+
+    <noscript>
+        Sorry...JavaScript is needed to go ahead.
+    </noscript>
+
+    <p>This is web page body </p>
+
+   </body>
+</html>
