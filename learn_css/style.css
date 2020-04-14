@@ -1,0 +1,52 @@
+h1 {
+    color:#ffffff;
+    text-align: center;
+    text-shadow: 2px 2px 5px black;
+    font-size-adjust:auto;
+}
+
+h2 {
+    color:teal;
+    font-size:20px;
+    font-weight: 200;
+    font-size-adjust:auto;
+    text-shadow: 2px 2px 6px grey;
+}
+
+body {
+    background-image:url(./images/coding_splash.jpg), url(./images/minimal_building_small.jpg);
+    background-color: chocolate;
+    background-blend-mode:overlay;
+    background-repeat: no-repeat, repeat;
+    background-position: center;
+    border-radius: 10px;
+}
+
+.square {
+    background-color: antiquewhite;
+    width: 500px;
+    height: 100px;
+    margin: auto
+}
+
+
+.header {
+    background-image:url(./images/coding_splash.jpg), url(./images/minimal_building_small.jpg);
+    background-blend-mode: hue;
+    background-repeat: no-repeat, repeat;
+    background-position: center;
+    border-radius: 10px;
+    padding: 5px;
+    break-after: auto
+}
+
+
+.main_body {
+    background-image:url(./images/coding_splash.jpg), url(./images/minimal_building_small.jpg);
+    background-blend-mode: soft-light;
+    background-repeat: no-repeat, repeat;
+    background-position: center;
+    border-radius: 10px;
+    padding: 5px;
+}
+
