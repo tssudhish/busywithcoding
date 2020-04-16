@@ -1,47 +1,77 @@
+html{
+    font-family: 'Ubuntu', sans-serif, monospace;
+
+    
+}
+
+h1,h2,p {
+    color:darkslategrey;
+    text-align: left;
+    text-shadow: 1px 1px 3px #444;
+    font-size-adjust:auto;
+    line-height: 1rem;
+    text-decoration-line: none;
+}
+
 h1 {
-    color:#ffffff;
-    text-align: center;
-    text-shadow: 2px 2px 5px black;
-    font-size-adjust:auto;
+    font-size: 2em;
 }
 
-h2 {
-    color:teal;
-    font-size:20px;
-    font-weight: 200;
-    font-size-adjust:auto;
-    text-shadow: 2px 2px 6px grey;
-}
-
-body {
-    background-image:url(./images/coding_splash.jpg), url(./images/minimal_building_small.jpg);
-    background-color: chocolate;
-    background-blend-mode:overlay;
+body, div {
+/*
+    background-image:url(./images/minimal_building_small.jpg);
+        url(./images/coding_splash.jpg), ;
+*/
+    background-blend-mode:  color-dodge;
     background-repeat: no-repeat, repeat;
     background-position: center;
     border-radius: 10px;
-}
-
-.square {
-    background-color: antiquewhite;
-    width: 500px;
-    height: 100px;
-    margin: auto
+    background-color: whitesmoke;
+    opacity: 95%;
+    padding: 10px;
 }
 
 
-.header {
-    background-image:url(./images/coding_splash.jpg), url(./images/minimal_building_small.jpg);
-    background-blend-mode: hue;
-    background-repeat: no-repeat, repeat;
-    background-position: center;
-    border-radius: 10px;
+.paragraph {
+    text-shadow: 3px 2px 5px #4367ad;
+    font-family: sans-serif;
+    font-weight: 300;
+    
+    
+}
+
+.img_border {
+    display: block;
+    margin: auto;
+    max-height: 50%;
+    max-width: 50%;
+    width: 50%;
+    height: 50%;
+    opacity: 50%;
+}
+
+.custom_border {
+    border: 5px;
+    border-style: inset;
+    border-left-style: solid;
+    border-left-color: blue;
+    border-left-width: 25px;
+    border-bottom-width: thin;
+    border-top-width:0px;
+    border-right-style: solid;
+    border-right-width:thin;
+    border-right-color: black;
+    border-radius: 0px;
+    border-bottom-left-radius: 10px;
+    border-bottom-right-radius: 10px;
+    border-top-left-radius:10px;
+    box-shadow: 1px 1px 5px 3px #888888;
     padding: 5px;
-    break-after: auto
+    
+    
 }
 
-
-.main_body {
+.footer {
     background-image:url(./images/coding_splash.jpg), url(./images/minimal_building_small.jpg);
     background-blend-mode: soft-light;
     background-repeat: no-repeat, repeat;
@@ -50,3 +80,21 @@ body {
     padding: 5px;
 }
 
+.table {
+/*    padding: 10px;*/
+    column-gap: 10px;
+    width: 100%;
+    text-align: center;
+    border-radius: 50px;
+}
+
+table td {
+    width=100%;
+    border: 1px solid black; 
+    padding: 5px;
+    width: inherit;
+    border-radius: 10px;
+    background-color: papayawhip;
+    box-shadow: 1px 1px 5px 3px #888888;
+    
+}
