@@ -6,32 +6,61 @@
         <link rel="stylesheet" href="style.css">
     </head>
     <body>
-        <div class="custom_border">
-            <h1>My Coding Website</h1>
-        </div>
-        <br>
-        <div class="custom_border">
-            <h2>First Heading</h2>
-        </div>
-        <br>
-        <div class="custom_border" class="bg">
-            <p class="paragraph">
-                 A webpage to work out my web development skill. 
-                 <br>
-            </p>
-            <img src="images/minimal_building_small.jpg" class="img_border">
-        </div>
-        <br>
-        <div class="custom_border" class="bg">
-            <table class="table" class="custom_border">
-            <tr>
-                <td ><a href="">About</a></td>    
-                <td><a href="">Contact Us</a></td>    
-                <td><a href="">Share</a></td>    
-            </tr>
-            
-            </table>
-            
-        </div>
+        <nav>
+            <ul class="webnav" id="dropDownClick">
+                <li> <a href="#home">Home</a></li>
+                <li> <a href="#news">News</a></li>
+                <li> <a href="#contact">Contact</a></li>
+                <li> <a href="#about">About</a></li>
+                <li> <a href="#search">Find</a></li>
+                <li class="nav-right"> <a href="#signin">Sign In</a></li>
+                <li class="nav-right"> <a href="#signup">Sign Up</a></li>
+                <li class="dropDownIcon"><a href="javascript:void(0)" onclick="onDropDownClick()">&#8801;</a></li>
+            </ul>
+        </nav>
+
+        <script>
+            function onDropDownClick() {
+                var dropDownMenu = document.getElementById("dropDownClick");
+
+
+                console.log(dropDownMenu.className);
+                if (dropDownMenu.className === "webnav") {
+                    dropDownMenu.className += " responsive";
+                } else {
+                    dropDownMenu.className = "webnav";
+                }
+
+            }
+        </script>
+        <main class="mainpage">
+            <div>
+                <div class="custom_border">
+                    <h1>My Coding Website</h1>
+                </div>
+                <br>
+                <div class="custom_border">
+                    <h2>First Heading</h2>
+                </div>
+                <br>
+                <div class="custom_border" class="bg">
+                    <p class="paragraph">
+                        A webpage to work out my web development skill.
+                        <br>
+                    </p>
+                </div>
+                <br>
+            </div>
+        </main>
+
+        <footer>
+            <ul class="webfooter">
+                <li><em>&copy; Sudhish Kumar, 2020</em></li>
+                <li><a href="#about">About</a></li>    
+                <li><a href="#contactus">Contact Us</a></li>    
+                <li><a href="javascript:void(0)">Share</a></li>    
+            </ul>
+
+        </footer>
     </body>
 </html>
