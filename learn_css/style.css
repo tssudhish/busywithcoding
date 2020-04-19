@@ -11,7 +11,7 @@ body {
 }
 
 div {
-    border: 2px solid black;
+    /*    border: 2px solid black;*/
     display: block;
 }
 
@@ -28,9 +28,10 @@ nav {
     background-color: #333;
     overflow: hidden;
     box-shadow: 3px 3px 5px grey;
-/*    position: fixed;*/
+    /*    position: fixed;*/
     top: 0;
 }
+
 
 ul.webnav {
     display: block;
@@ -53,7 +54,7 @@ ul.webnav li a {
     text-align: center;
     padding: 10px;
     text-transform: uppercase;
-    color: #666;
+    color: #E6F7F6;
 }
 
 ul.webnav li a:hover {
@@ -89,7 +90,7 @@ h1,h2,p {
 .container {
     width: 100%;
     margin: 0;
-    padding-top: 4%;
+/*    padding-top: 4%;*/
     padding-bottom: 4%;
     border: 1px 1px solid black;
     align-content: center;
@@ -201,13 +202,17 @@ ul.webfooter li a:hover {
     margin: 1px;;
     padding: 1px;;
     align-self: stretch;
-    
+
 }
+
 
 .col-2,
 .col-4,
 .col-6 {
     align-self: stretch;
+    border-right-color: #36A49C;
+    border-right-width: 1px;
+    border-right-style: solid;
 }
 
 * {
@@ -272,13 +277,13 @@ div.login {
         text-align: left;
         width: 90%;
     }
-    
+
     .col-2,
     .col-4,
     .col-6 {
         width: 100%;
-        
+
     }
-    
+
 }
 
