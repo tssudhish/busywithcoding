@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+
+    <head>
+        <link href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@300&display=swap" rel="stylesheet">
+        <link rel="stylesheet" href="tictacstyle.css">
+
+    </head>
+
+    <body>
+
+        <div class="winbox" id="winIDRow">
+            <div id="row-1">
+                <img class="crossed" src="images/horizontal.png">  
+            </div>
+            <div id="row-2">
+                <img class="crossed" src="images/horizontal.png">            </div>
+            <div id="row-3">
+                <img class="crossed" src="images/horizontal.png">            </div>
+        </div>
+        <div class="winbox" id="winIDCol">
+            <div id="col-1">
+                <img  class="crossed" src="images/vertical.png"> 
+            </div>
+            <div id="col-2">
+                <img src="images/vertical.png"> 
+            </div>
+            <div id="col-3">
+                <img src="images/vertical.png"> 
+            </div>
+        </div>
+
+        <div class="winbox"  id="winIDMain">
+            <img class="crossed" id="diag-main" src="images/cross-1.png">
+
+
+        </div>
+        <div class="winbox"  id="winIDAlt">
+            <img class="crossed" id="diag-alt" src="images/cross-2.png">
+        </div>
+
+        <div class="gamebox" id="gameBoxID" >
+            <div class="box"   >
+                <h1>&#8192;</h1>
+            </div>
+            <div class="box"   >
+                <h1>&#8192;</h1>
+            </div>
+            <div class="box"   >
+                <h1>&#8192;</h1>
+            </div>
+            <div class="box"   >
+                <h1>&#8192;</h1>
+            </div>
+            <div class="box"   >
+                <h1>&#8192;</h1>
+            </div>
+            <div class="box"   >
+                <h1>&#8192;</h1>
+            </div>
+            <div class="box"   >
+                <h1>&#8192;</h1>
+            </div>
+            <div class="box"   >
+                <h1>&#8192;</h1>
+            </div>
+            <div class="box"   >
+                <h1>&#8192;</h1>
+            </div>
+
+        </div>
+
+        <div class="button-group">
+            <button class="reset" onclick="resetButtonCallBack()"  id="resetID">RESET</button>
+            <button class="cancel" onclick="cancelButtonCallBack()" id="cancelID">CANCEL</button>
+
+        </div>
+
+        <!--        jQUERY src-->
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+
+        <!--        tictac game js-->
+        <script type="text/javascript" src="javascript/tictac.js" charset="utf-8"> </script>
+
+
+    </body>
+</html>
