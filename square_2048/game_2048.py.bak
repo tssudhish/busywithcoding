@@ -1,0 +1,94 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on Mon May 11 11:13:49 2020
+
+@author: pi
+"""
+
+import os
+
+import pygame
+from Score import Score
+from pygame.locals import *
+
+
+FPS=60
+
+class App:
+    '''
+    App class with game definition stored
+    '''
+    def __init__(self):
+        self._running = True
+        self._display_surf = None
+        self.size = self.width, self.height = 512, 512
+#        
+ 
+    def on_init(self):
+        pygame.init()
+        self.mainclock = pygame.time.Clock()
+        if not pygame.font.get_init():
+            pygame.font.init()
+        self._display_surf = pygame.display.set_mode(self.size, pygame.HWSURFACE | pygame.DOUBLEBUF)
+        self.myfont = pygame.font.SysFont('Comic Sans MS', 16)
+        self.Tyfont = pygame.font.SysFont('Comic Sans MS', 50)
+        self._running = True
+        
+ 
+    def on_event(self, event):
+        if event.type == pygame.QUIT:
+            self._running = False
+    def on_loop(self):
+        pass
+    def on_render(self):
+        pass
+    def on_cleanup(self):
+        pygame.quit()
+ 
+    def run(self):
+        if self.on_init() == False:
+            self._running = False
+ 
+        while( self._running ):
+            for event in pygame.event.get():
+                self.on_event(event)
+            self.on_loop()
+            self.on_render()
+        self.on_cleanup()
+# 
+    
+class GAME_2048(App):
+    '''
+    class defining the window of the game with background and other details.
+    
+    '''
+    score=0
+    def __init__(self):
+        super().__init__()
+        self.setup_window()
+        
+    def setup_window(self):
+        self.score = Score(250, 250)
+    def on_render(self):
+        self.mainclock.tick(FPS)
+        pygame.display.flip()
+
+    def run(self):
+        if self.on_init() == False:
+            self._running = False
+
+        while( self._running ):
+#            for event in pygame.event.get():
+#                self.on_event(event)
+#            self.on_loop()
+            self.on_render()
+        self.on_cleanup()
+
+
+    
+    
+
+if __name__ == "__main__" :
+    game = GAME_2048()
+    game.run()
