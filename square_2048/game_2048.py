@@ -1,7 +1,7 @@
 import os
 import pygame
 from random import randrange
-import math
+import numpy as np
 
 #import ConfigParser
 
@@ -12,8 +12,8 @@ import math
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
 BACKGROUND= (251, 248, 239)
-BOXBACKGROUND=(201, 189, 177)
-FPS   = 1
+BOXBACKGROUND=(177, 181, 180)
+FPS   = 60
 SCREEN_WIDTH=400
 SCREEN_HEIGHT=600
 BOX_WIDTH=360
@@ -35,7 +35,8 @@ x_change=0
 y_change=0
 
 
-COLOR_DICT={"2":(238, 228, 218),
+COLOR_DICT={ "0":(201, 189, 177),
+            "2":(238, 228, 218),
             "4":(236,224,200),
             "8":(242,177,121),
             "16":(245,149,99),
@@ -84,12 +85,14 @@ class TILE(pygame.sprite.Sprite):
         if not pygame.font.get_init():
             pygame.font.init()
         
-        value_font= pygame.font.SysFont('freesans', self.fontSize)      
-        value_text=  "{:^}".format(self.value)        
+        value_font= pygame.font.SysFont('freesans', self.fontSize)
+        if self.value==0:
+            value_text=""
+        else:
+            value_text=  "{:^}".format(self.value)        
         self.valueImage=value_font.render(value_text, False, (139,0,0))
         
-    def on_collide(self,other_tile):
-        pass
+    
     
 class GAME_BOX(pygame.surface.Surface):
     box_w=BOX_WIDTH
@@ -160,7 +163,13 @@ class TILES(pygame.sprite.Group):
 
 class GAME():
     number_of_tiles=NUMBER_OF_TILE
+    game_state=np.zeros((NUMBER_OF_TILE,NUMBER_OF_TILE))
+    game_state=game_state.astype(int)
+    
+    [[0 for y in range(NUMBER_OF_TILE) ] \
+                 for x in range(NUMBER_OF_TILE)]
     running=False
+    score=0
     def __init__(self):
         # Create an SCREEN_WIDTH X SCREEN_HEIGHT sized screen
         print("Initialized {}()".format(self.__class__.__name__))
@@ -174,36 +183,220 @@ class GAME():
         else:
             print("Error!! - Unable to initialize pygame")
             raise EnvironmentError
-    
-    
-    def clear(self):
         self.screen = pygame.display.set_mode([SCREEN_WIDTH, SCREEN_HEIGHT])
         self.screen.fill(BACKGROUND)
         self.game_box=GAME_BOX(self.screen)
         self.game_box.show()
         self.score_board=SCORE_BOARD(self.screen)
-        self.score_board.update_score()
-        pygame.display.update() 
+        self.tile_group=TILES()
+        self.seed()
+        self.need_random_tile=False
+    
+    def seed(self):
+        self.add_random_tile() # first random tile
+        self.add_random_tile() # second random tile
+        self.update_view()
+    
+    def update_game_score(self):
+        max_v=np.amax(self.game_state)
+        if max_v!=2:
+            self.score=max_v
+        self.score_board.score=self.score
+        
             
-        pass
+    
+    def update_view(self):
+        self.update_game_score()
+        self.tile_group.empty()
+        for row in range(NUMBER_OF_TILE):
+            for col in range(NUMBER_OF_TILE):
+                self.tile_group.add(row,col,self.game_state[row,col])
+        self.tile_group.draw(self.screen)
+        self.score_board.update_score()
+        pygame.display.update()
+        
+    
+    def add_random_tile(self):
+        iterator=0
+        while True:
+            r=randrange(4)
+            c=randrange(4)
+            if self.game_state[r,c]!=0:
+                iterator+=1
+                continue
+            elif iterator==(NUMBER_OF_TILE*NUMBER_OF_TILE - 1):
+                print("GAME OVER!")
+                break                
+            else:
+                self.game_state[r,c]=2
+                break
+
+
+#---------------Movements-------------------------------------------------
+    def move_left(self):
+        self.collect_left()
+        if self.need_random_tile:
+            self.add_random_tile()
+            self.need_random_tile=False
+        self.update_view()
+        clock.tick(FPS)
+
+    def move_right(self):
+        self.collect_right()
+        if self.need_random_tile:
+            self.add_random_tile()
+            self.need_random_tile=False
+        self.update_view()
+        clock.tick(FPS)
+
+    def move_down(self):
+        self.collect_down()
+        if self.need_random_tile:
+            self.add_random_tile()
+            self.need_random_tile=False
+        self.update_view()
+        clock.tick(FPS)
+
+    def move_up(self):
+        self.collect_up()
+        if self.need_random_tile:
+            self.add_random_tile()
+            self.need_random_tile=False
+        self.update_view()
+        clock.tick(FPS)
+
+
+    def collect_left(self):
+        # update game_state
+        row=0
+        while row<NUMBER_OF_TILE:
+            col=0
+            while col<NUMBER_OF_TILE-1:
+                
+                if not np.any(self.game_state[row,:]):
+                    break                
+                elif all([self.game_state[row,col]==0, 
+                          self.game_state[row,col+1]>0]):
+                    self.game_state[row,col]=self.game_state[row,col+1]
+                    self.game_state[row,col+1]=0
+                    self.need_random_tile=True
+                    self.collect_left()
+                elif all([self.game_state[row,col]==self.game_state[row,col+1],
+                          self.game_state[row,col+1]>0]):
+                    self.game_state[row,col]*=2
+                    self.game_state[row,col+1]=0
+                    self.need_random_tile=True
+                    self.collect_left()
+                else:
+                    col+=1
+                    #row-=1
+                    continue
+
+            row+=1
+            self.update_view()
+            clock.tick(FPS)
+        
+    def collect_right(self):
+        # update game_state
+        row=0
+        while row<NUMBER_OF_TILE:
+            col=NUMBER_OF_TILE-1
+            while col>0:
+                
+                if not np.any(self.game_state[row,:]):
+                    break                
+                elif all([self.game_state[row,col]==0, 
+                          self.game_state[row,col-1]>0]):
+                    self.game_state[row,col]=self.game_state[row,col-1]
+                    self.game_state[row,col-1]=0
+                    self.need_random_tile=True
+                    self.collect_right()
+                elif all([self.game_state[row,col]==self.game_state[row,col-1],
+                          self.game_state[row,col-1]>0]):
+                    self.game_state[row,col]*=2
+                    self.game_state[row,col-1]=0
+                    self.need_random_tile=True
+                    self.collect_right()
+                else:
+                    col-=1
+                    #row-=1
+                    continue
+
+            row+=1
+            self.update_view()
+            clock.tick(FPS)
+
+
+    def collect_down(self):
+        # update game_state
+        col=0
+        while col<NUMBER_OF_TILE:
+            row=NUMBER_OF_TILE-1
+            while row>0:
+                
+                if not np.any(self.game_state[:,col]):
+                    break                
+                elif all([self.game_state[row,col]==0, 
+                          self.game_state[row-1,col]>0]):
+                    self.game_state[row,col]=self.game_state[row-1,col]
+                    self.game_state[row-1,col]=0
+                    self.need_random_tile=True
+                    self.collect_down()
+                elif all([self.game_state[row,col]==self.game_state[row-1,col],
+                          self.game_state[row-1,col]>0]):
+                    self.game_state[row,col]*=2
+                    self.game_state[row-1,col]=0
+                    self.need_random_tile=True
+                    self.collect_down()
+                else:
+                    row-=1
+                    #row-=1
+                    continue
+            col+=1
+            self.update_view()
+            clock.tick(FPS)
+
+
+    def collect_up(self):
+        # update game_state
+        col=0
+        while col<NUMBER_OF_TILE:
+            row=0
+            while row<NUMBER_OF_TILE-1:
+                
+                if not np.any(self.game_state[:,col]):
+                    break                
+                elif all([self.game_state[row,col]==0, 
+                          self.game_state[row+1,col]>0]):
+                    self.game_state[row,col]=self.game_state[row+1,col]
+                    self.game_state[row+1,col]=0
+                    self.need_random_tile=True
+                    self.collect_up()
+                elif all([self.game_state[row,col]==self.game_state[row+1,col],
+                          self.game_state[row+1,col]>0]):
+                    self.game_state[row,col]*=2
+                    self.game_state[row+1,col]=0
+                    self.need_random_tile=True
+                    self.collect_up()
+                else:
+                    row+=1
+                    #row-=1
+                    continue
+            col+=1
+            self.update_view()
+            clock.tick(FPS)
+
 
 clock = pygame.time.Clock()
 game=GAME()
-
 #while game.running:
 #    for e in pygame.event.get():
 #        if e.type == pygame.QUIT:
 #            game.running = 0
 
 
-game.clear()
-tg=TILES()
+#game.clear()
 
-for r in range(4):
-    for c in range(4):
-        tg.add(r,c,pow(2,r+1))
-
-tg.draw(game.screen)
 pygame.display.update()
 clock.tick(FPS)
 
