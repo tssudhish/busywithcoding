@@ -18,7 +18,7 @@ SCREEN_WIDTH=400
 SCREEN_HEIGHT=600
 BOX_WIDTH=360
 BOX_HEIGHT=BOX_WIDTH
-
+GAME_MODE="live"
 
 BOX_ORIGIN_x=(SCREEN_WIDTH-BOX_WIDTH)/2
 BOX_ORIGIN_y=(SCREEN_HEIGHT-SCREEN_WIDTH)+BOX_ORIGIN_x
@@ -100,11 +100,12 @@ class GAME_BOX(pygame.surface.Surface):
     box_loc_x=BOX_ORIGIN_x
     box_loc_y=BOX_ORIGIN_y
     color=BOXBACKGROUND
+    banner="GAME OVER!"
     
     def __init__(self,display_surface):
         print("Created {} of w:{} X h:{}".format(self.__class__.__name__,self.box_w,self.box_h))
         self.display_surface=display_surface
-        super().__init__([self.box_w,self.box_h])
+        super().__init__([self.box_w,self.box_h],pygame.SRCALPHA)
         self.fill(self.color)
         self.rect=self.get_rect()
         self.rect.x=self.box_loc_x
@@ -112,6 +113,20 @@ class GAME_BOX(pygame.surface.Surface):
     def show(self):
         self.display_surface.blit(self,(self.rect.x,self.rect.y))
         pygame.display.update()
+    def game_over(self):
+        self.fill(BOXBACKGROUND+(128,))
+        if not pygame.font.get_init():
+            pygame.font.init()
+        
+        game_font= pygame.font.SysFont('freesans', 50)
+        game_text=  "{:^}".format(self.banner)        
+        self.Image=game_font.render(game_text, False, BLACK)
+        self.blit(self.Image,(self.rect.x+TILE_GAP,
+                              BOX_HEIGHT/2))
+        
+        self.display_surface.blit(self,(self.rect.x,self.rect.y))
+        pygame.display.update()
+        
         
 
 class SCORE_BOARD(GAME_BOX):
@@ -165,10 +180,8 @@ class GAME():
     number_of_tiles=NUMBER_OF_TILE
     game_state=np.zeros((NUMBER_OF_TILE,NUMBER_OF_TILE))
     game_state=game_state.astype(int)
-    
-    [[0 for y in range(NUMBER_OF_TILE) ] \
-                 for x in range(NUMBER_OF_TILE)]
     running=False
+    win=True
     score=0
     def __init__(self):
         # Create an SCREEN_WIDTH X SCREEN_HEIGHT sized screen
@@ -191,6 +204,7 @@ class GAME():
         self.tile_group=TILES()
         self.seed()
         self.need_random_tile=False
+        
     
     def seed(self):
         self.add_random_tile() # first random tile
@@ -214,7 +228,24 @@ class GAME():
         self.tile_group.draw(self.screen)
         self.score_board.update_score()
         pygame.display.update()
-        
+            
+    def check_game_status(self):
+        if self.score==2048:
+            self.game_box.banner="You Won!"
+            self.game_box.game_over()
+            self.running=False
+            self.win=True
+        elif np.all(self.game_state):
+            if all([np.amin(np.absolute(np.diff(self.game_state,axis=1)))>0,
+                    np.amin(np.absolute(np.diff(self.game_state,axis=1)))>1]):
+                self.game_box.game_over()
+                self.running=False
+                self.win=False
+            else:
+                print("Moves Available!")
+        return self.win
+            
+                
     
     def add_random_tile(self):
         iterator=0
@@ -224,9 +255,11 @@ class GAME():
             if self.game_state[r,c]!=0:
                 iterator+=1
                 continue
-            elif iterator==(NUMBER_OF_TILE*NUMBER_OF_TILE - 1):
-                print("GAME OVER!")
-                break                
+            elif np.all(self.game_state):
+                self.game_box.game_over()
+                self.running=False
+                self.win=False                
+                break
             else:
                 self.game_state[r,c]=2
                 break
@@ -239,7 +272,6 @@ class GAME():
             self.add_random_tile()
             self.need_random_tile=False
         self.update_view()
-        clock.tick(FPS)
 
     def move_right(self):
         self.collect_right()
@@ -247,7 +279,6 @@ class GAME():
             self.add_random_tile()
             self.need_random_tile=False
         self.update_view()
-        clock.tick(FPS)
 
     def move_down(self):
         self.collect_down()
@@ -255,7 +286,6 @@ class GAME():
             self.add_random_tile()
             self.need_random_tile=False
         self.update_view()
-        clock.tick(FPS)
 
     def move_up(self):
         self.collect_up()
@@ -263,7 +293,6 @@ class GAME():
             self.add_random_tile()
             self.need_random_tile=False
         self.update_view()
-        clock.tick(FPS)
 
 
     def collect_left(self):
@@ -294,7 +323,6 @@ class GAME():
 
             row+=1
             self.update_view()
-            clock.tick(FPS)
         
     def collect_right(self):
         # update game_state
@@ -324,7 +352,6 @@ class GAME():
 
             row+=1
             self.update_view()
-            clock.tick(FPS)
 
 
     def collect_down(self):
@@ -354,7 +381,6 @@ class GAME():
                     continue
             col+=1
             self.update_view()
-            clock.tick(FPS)
 
 
     def collect_up(self):
@@ -384,25 +410,33 @@ class GAME():
                     continue
             col+=1
             self.update_view()
-            clock.tick(FPS)
 
 
 clock = pygame.time.Clock()
 game=GAME()
-#while game.running:
-#    for e in pygame.event.get():
-#        if e.type == pygame.QUIT:
-#            game.running = 0
 
 
-#game.clear()
+while game.running and GAME_MODE=="live":
+    for e in pygame.event.get():
+        if e.type == pygame.QUIT:
+            game.running = 0
+        if e.type == pygame.KEYDOWN:
+            if e.key == pygame.K_LEFT:
+                game.move_left()
+            if e.key == pygame.K_RIGHT:
+                game.move_right()
+            if e.key == pygame.K_UP:
+                game.move_up()
+            if e.key == pygame.K_DOWN:
+                game.move_down()
 
-pygame.display.update()
-clock.tick(FPS)
+    game.check_game_status()
+    pygame.display.update()
+    clock.tick(FPS)
 
 
-
-#pygame.quit()
+#if GAME_MODE=="live":
+#    pygame.quit()
 
 
 
@@ -411,112 +445,3 @@ clock.tick(FPS)
 
  
 
-
-
-
-
-
-
-#while running:
-#    for event in pygame.event.get():
-#        if event.type == pygame.QUIT:
-#            pygame.quit()
-
-#pygame.display.update()
-
-
-#
-## Game Screen
-#game_w=SCREEN_WIDTH
-#game_h=SCREEN_HEIGHT
-#
-#gameScreen=pygame.Rect(0,0,game_w,game_h)
-#
-## Box Screen
-#box_w=BOX_WIDTH
-#box_h=BOX_HEIGHT
-#box_loc_x=(SCREEN_WIDTH-BOX_WIDTH)/2
-#box_loc_y=(SCREEN_HEIGHT-SCREEN_WIDTH)+box_loc_x
-#boxScreen=pygame.Rect(box_loc_x,box_loc_y,box_w,box_h)
-#
-#
-#
-## Draw a tile
-#game_origin_x=box_loc_x+TILE_GAP
-#game_origin_y=box_loc_y+TILE_GAP
-#
-#
-#
-#tile_sprite_group=pygame.sprite.Group()
-#
-#for num in range(2):
-#
-#    tile=Tile(COLOR_DICT["2"],tile_w,tile_h)
-#    tile.rect.x=game_origin_x+randrange(4)*(tile_w+TILE_GAP)
-#    tile.rect.y=game_origin_y+randrange(4)*(tile_h+TILE_GAP)
-#    tile.index=num
-#    # check if this newly created tile is clashing with another
-#    tile_sprite_group.add(tile)
-#
-#    
-#
-#
-#
-## Set the title of the window
-#pygame.display.set_caption('2048')
-#clock = pygame.time.Clock()
-#running = True
-#move_tiles=False
-#while running:
-#    screen.fill(BLACK)
-#    pygame.draw.rect(screen,BACKGROUND,gameScreen) #,border_radius=5
-#    pygame.draw.rect(screen,BOXBACKGROUND,boxScreen) #,border_radius=5
-#
-#    for event in pygame.event.get():
-#        if event.type == pygame.QUIT:
-#            running = False
-#        if event.type == pygame.KEYDOWN:
-#            if event.key == pygame.K_LEFT:
-#                x_change=-move
-#                y_change=0
-#                move_tiles=True
-#            elif event.key == pygame.K_RIGHT:
-#                x_change=move
-#                y_change=0
-#                move_tiles=True
-#            elif event.key == pygame.K_UP:
-#                x_change=0
-#                y_change=-move
-#                move_tiles=True
-#            elif event.key == pygame.K_DOWN:
-#                x_change=0
-#                y_change=move
-#                move_tiles=True
-#            else:
-#                x_change=y_change=0
-#                move_tiles=False
-#                
-#    tile_sprite_group.draw(screen)
-#    if move_tiles:
-#        for t in tile_sprite_group:
-#            t.move_this_tile=True            
-#    
-#    
-#    for t in tile_sprite_group:
-#        other_tiles_rect=[tl.rect.inflate(TILE_GAP,TILE_GAP) for tl in tile_sprite_group if tl.rect not in t.rect ]
-#        while t.move_this_tile:
-#            print("Moving tile:{}".format(t.index))
-#            t.rect.move_ip(x_change,y_change)
-#            boxB=(boxScreen.contains(t.rect.inflate(TILE_GAP,TILE_GAP))==1)
-#            rectColB=(t.rect.collidelist(other_tiles_rect)>=0)
-#            
-#            print("tile.rect.x:{},tile.rect.y:{}, boxB:{}, rectColB:{}".format(t.rect.x,t.rect.y,boxB,rectColB))
-#            if all([boxB,rectColB]):
-#                  t.rect.move_ip(-x_change,-y_change)
-#                  t.move_this_tile=False
-#                  break
-#    
-#    pygame.display.update()    
-#    clock.tick(FPS)
-#
-#pygame.quit()
