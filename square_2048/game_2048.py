@@ -162,14 +162,10 @@ class SCORE_BOARD(GAME_BOX):
         icon_x=100; icon_y=10
         self.icon_box.blit(refreshImage,(icon_x,icon_y))
         refreshImageRect=refreshImage.get_rect()
-        print(self.rect.x,self.rect.y)
-        print(icon_box_x,icon_box_y)
-        print(icon_x,icon_y)
         self.loc_x=self.icon_box_loc_x+icon_x
         self.loc_y=self.icon_box_loc_y+icon_y
         self.loc_width=self.loc_x+refreshImageRect.width
         self.loc_height=self.loc_y+refreshImageRect.height
-        print()
         text=  "{:^}".format("Restart?")        
         refreshText=self.icon_font.render(text, False, WHITE)
         self.icon_box.blit(refreshText,(10,20))
