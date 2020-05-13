@@ -19,6 +19,7 @@ SCREEN_HEIGHT=600
 BOX_WIDTH=360
 BOX_HEIGHT=BOX_WIDTH
 GAME_MODE="live"
+#GAME_MODE="debug"
 
 BOX_ORIGIN_x=(SCREEN_WIDTH-BOX_WIDTH)/2
 BOX_ORIGIN_y=(SCREEN_HEIGHT-SCREEN_WIDTH)+BOX_ORIGIN_x
@@ -127,29 +128,68 @@ class GAME_BOX(pygame.surface.Surface):
         self.display_surface.blit(self,(self.rect.x,self.rect.y))
         pygame.display.update()
         
-        
+
 
 class SCORE_BOARD(GAME_BOX):
     def __init__(self,display_surface):
-        self.color=BACKGROUND
+        self.color=BOXBACKGROUND
         self.box_h=(SCREEN_HEIGHT-BOX_HEIGHT)/4
         self.box_w=self.box_w
         self.box_loc_y=(SCREEN_HEIGHT-BOX_HEIGHT)/4
         self.score=0
+        self.set_fonts()
+        self.loc_x=self.loc_y=0
+        self.loc_width=self.loc_height=0
         super().__init__(display_surface)
-    
-    def get_score(self):
+    def set_fonts(self):
         if not pygame.font.get_init():
             pygame.font.init()
-        score_font= pygame.font.SysFont('freesans', 60)      
-        score_text=  "{}".format(self.score).rjust(5)        
-        self.scoreImage=score_font.render(score_text, False, (0, 0, 0))
+        self.score_font= pygame.font.SysFont('freesans', 60)
+        self.icon_font= pygame.font.SysFont('freesans', 20)
         
+    
+    def get_score(self):
+        score_text=  "{}".format(self.score).rjust(5)        
+        self.scoreImage=self.score_font.render(score_text, False, BLACK)
+    def refresh_icon(self):
+        icon_box_x=150; icon_box_y=60
+        self.icon_box_loc_x=self.rect.x+200
+        self.icon_box_loc_y=self.rect.y
+        self.icon_box=pygame.surface.Surface((icon_box_x,icon_box_y))
+        self.icon_box=self.icon_box.convert()
+        self.icon_box.fill(BOXBACKGROUND)
+        refreshImage = pygame.image.load(os.path.abspath("./images/icons8-refresh-40.png"))
+        icon_x=100; icon_y=10
+        self.icon_box.blit(refreshImage,(icon_x,icon_y))
+        refreshImageRect=refreshImage.get_rect()
+        print(self.rect.x,self.rect.y)
+        print(icon_box_x,icon_box_y)
+        print(icon_x,icon_y)
+        self.loc_x=self.icon_box_loc_x+icon_x
+        self.loc_y=self.icon_box_loc_y+icon_y
+        self.loc_width=self.loc_x+refreshImageRect.width
+        self.loc_height=self.loc_y+refreshImageRect.height
+        print()
+        text=  "{:^}".format("Restart?")        
+        refreshText=self.icon_font.render(text, False, WHITE)
+        self.icon_box.blit(refreshText,(10,20))
+    
     def update_score(self):
         self.get_score()
+        self.refresh_icon()
         self.display_surface.blit(self,(self.rect.x,self.rect.y))     # wipe clean with rectangle
         self.display_surface.blit(self.scoreImage,(self.rect.x,self.rect.y)) # insert score
+        self.display_surface.blit(self.icon_box,(self.icon_box_loc_x,self.icon_box_loc_y)) # insert refresh_icon
         pygame.display.update()
+
+    def isOver(self, pos):
+        print("incoming mouse pos: {}".format(pos))
+        print("range to be checked over:({},{} -{},{})".format(self.loc_x,self.loc_y,self.loc_width,self.loc_height))
+        #Pos is the mouse position or a tuple of (x,y) coordinates
+        if pos[0] > self.loc_x and pos[0] < self.loc_width:
+            if pos[1] > self.loc_y and pos[1] < self.loc_height:
+                return True
+        return False
         
 
 
@@ -175,11 +215,9 @@ class TILES(pygame.sprite.Group):
         super(pygame.sprite.Group,self).add(tile)
 
 
-
+#=========================Main Game========================================
 class GAME():
     number_of_tiles=NUMBER_OF_TILE
-    game_state=np.zeros((NUMBER_OF_TILE,NUMBER_OF_TILE))
-    game_state=game_state.astype(int)
     running=False
     win=True
     score=0
@@ -202,9 +240,20 @@ class GAME():
         self.game_box.show()
         self.score_board=SCORE_BOARD(self.screen)
         self.tile_group=TILES()
+        self.initialize_game_state()
         self.seed()
         self.need_random_tile=False
+    
+    def initialize_game_state(self):
+        self.game_state=np.zeros((NUMBER_OF_TILE,NUMBER_OF_TILE))
+        self.game_state=self.game_state.astype(int)
         
+    
+    def refresh(self):
+        self.initialize_game_state()
+        self.seed()
+        self.need_random_tile=False
+    
     
     def seed(self):
         self.add_random_tile() # first random tile
@@ -412,33 +461,52 @@ class GAME():
             self.update_view()
 
 
-clock = pygame.time.Clock()
-game=GAME()
 
 
-while game.running and GAME_MODE=="live":
-    for e in pygame.event.get():
-        if e.type == pygame.QUIT:
-            game.running = 0
-        if e.type == pygame.KEYDOWN:
-            if e.key == pygame.K_LEFT:
-                game.move_left()
-            if e.key == pygame.K_RIGHT:
-                game.move_right()
-            if e.key == pygame.K_UP:
-                game.move_up()
-            if e.key == pygame.K_DOWN:
-                game.move_down()
+def main():
+    clock = pygame.time.Clock()
+    game=GAME()
+    
+    
+    while game.running and GAME_MODE=="live":
+        for e in pygame.event.get():
+            if e.type == pygame.QUIT:
+                game.running = 0
+            elif e.type == pygame.KEYDOWN:
+                if e.key == pygame.K_LEFT:
+                    game.move_left()
+                if e.key == pygame.K_RIGHT:
+                    game.move_right()
+                if e.key == pygame.K_UP:
+                    game.move_up()
+                if e.key == pygame.K_DOWN:
+                    game.move_down()
+            elif e.type == pygame.MOUSEBUTTONDOWN:
+                pos=pygame.mouse.get_pos()
+                if game.score_board.isOver(pos):
+                    print("clicked refresh button")
+                    game.refresh()
+    
+        game.check_game_status()
+        pygame.display.update()
+        clock.tick(FPS)
+    pygame.quit()
 
-    game.check_game_status()
-    pygame.display.update()
-    clock.tick(FPS)
 
+def debug():
+    clock = pygame.time.Clock()
+    game=GAME()
+    pass
 
 #if GAME_MODE=="live":
 #    pygame.quit()
 
-
+if __name__=="__main__":
+    if GAME_MODE=="live":
+        main()
+    elif GAME_MODE=="debug":
+        print("Loaded the class for debugging")
+        debug()
 
 
 
