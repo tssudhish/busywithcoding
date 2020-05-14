@@ -13,7 +13,7 @@ BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
 BACKGROUND= (251, 248, 239)
 BOXBACKGROUND=(177, 181, 180)
-FPS   = 60
+FPS   = 150
 SCREEN_WIDTH=400
 SCREEN_HEIGHT=600
 BOX_WIDTH=360
@@ -275,6 +275,8 @@ class GAME():
         pygame.display.update()
             
     def check_game_status(self):
+        print("np.all(self.game_state): {}".format(np.all(self.game_state)))
+        
         if self.score==2048:
             self.game_box.banner="You Won!"
             self.game_box.game_over()
@@ -282,7 +284,7 @@ class GAME():
             self.win=True
         elif np.all(self.game_state):
             if all([np.amin(np.absolute(np.diff(self.game_state,axis=1)))>0,
-                    np.amin(np.absolute(np.diff(self.game_state,axis=1)))>1]):
+                    np.amin(np.absolute(np.diff(self.game_state,axis=0)))>0]):
                 self.game_box.game_over()
                 self.running=False
                 self.win=False
