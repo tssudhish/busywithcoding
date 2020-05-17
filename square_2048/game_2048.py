@@ -1,3 +1,4 @@
+# %load game_2048.py
 import os
 import pygame
 from random import randrange
@@ -239,17 +240,67 @@ class GAME():
         self.initialize_game_state()
         self.seed()
         self.need_random_tile=False
+        #self.reset=self.refresh # copy of refresh command
+        
+        
+    def step(self, action):
+        '''
+            creating step command similar to Q-Learning.
+            should return:-
+            s1,r,d,_ = env.step(action) 
+            s1 - state of the game we need to identify .
+            I think this should be index of the maximum value of the tile.
+            e.g. if the maximum tile is at the 2nd row,fourth position return 8 and so on
+            
+            r = reward, score of the game - does it need to be normalized? trying for that.
+            So, 2 will get reward of 2/2048 = 0.0009765625
+                2048 will get reward of 1.
+            
+            d = game status dead or alive. the code expect dead to be false which is opposite of
+                GAME class which has running = True. So returning not game.running makes sense
+                
+            action = input action is expected to be one of [0,1,2,3]
+        '''
+
+        if action==0:
+            self.move_left()
+        elif action==1:
+            self.move_right()
+        elif action==2:
+            self.move_down()
+        elif action==3:
+            self.move_up()        
+            
+            
+        reward = max(self.game_state.flatten())
+        dead = not self.running
+        self.update_view()
+        return self.get_state(),reward,dead,None
+        pass
+    
+    def get_state(self):
+        state_list=self.game_state.flatten()
+        game_state=[i for i,v in enumerate(state_list) if v==max(state_list)][0]
+        return game_state
     
     def initialize_game_state(self):
         self.game_state=np.zeros((NUMBER_OF_TILE,NUMBER_OF_TILE))
         self.game_state=self.game_state.astype(int)
+        self.running=True
         
     
-    def refresh(self):
+    def reset(self):
+        pygame.event.pump()
+        self.game_box.banner=""
+        self.game_box.game_over()
         self.initialize_game_state()
         self.seed()
         self.need_random_tile=False
+        pygame.display.update()
+        return self.get_state()
     
+    def action_space_sample(self):
+        return randrange(4)
     
     def seed(self):
         self.add_random_tile() # first random tile
@@ -262,7 +313,9 @@ class GAME():
             self.score=max_v
         self.score_board.score=self.score
         
-            
+    def quit(self):
+        self.running=False
+        pygame.quit()
     
     def update_view(self):
         self.update_game_score()
@@ -275,7 +328,7 @@ class GAME():
         pygame.display.update()
             
     def check_game_status(self):
-        print("np.all(self.game_state): {}".format(np.all(self.game_state)))
+        #print("np.all(self.game_state): {}".format(np.all(self.game_state)))
         
         if self.score==2048:
             self.game_box.banner="You Won!"
@@ -483,7 +536,7 @@ def main():
                 pos=pygame.mouse.get_pos()
                 if game.score_board.isOver(pos):
                     print("clicked refresh button")
-                    game.refresh()
+                    game.reset()
     
         game.check_game_status()
         pygame.display.update()
@@ -499,12 +552,12 @@ def debug():
 #if GAME_MODE=="live":
 #    pygame.quit()
 
-if __name__=="__main__":
-    if GAME_MODE=="live":
-        main()
-    elif GAME_MODE=="debug":
-        print("Loaded the class for debugging")
-        debug()
+# if __name__=="__main__":
+#     if GAME_MODE=="live":
+#         main()
+#     elif GAME_MODE=="debug":
+#         print("Loaded the class for debugging")
+#         debug()
 
 
 

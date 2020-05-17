@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+
 import game_2048
 import pygame
 from random import randrange
