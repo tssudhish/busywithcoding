@@ -12,6 +12,7 @@ import numpy as np
 
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
+RED   = (255,0,0)
 BACKGROUND= (251, 248, 239)
 BOXBACKGROUND=(177, 181, 180)
 FPS   = 150
@@ -19,8 +20,9 @@ SCREEN_WIDTH=400
 SCREEN_HEIGHT=600
 BOX_WIDTH=360
 BOX_HEIGHT=BOX_WIDTH
-GAME_MODE="live"
+#GAME_MODE="live"
 #GAME_MODE="debug"
+GAME_MODE="training"
 
 BOX_ORIGIN_x=(SCREEN_WIDTH-BOX_WIDTH)/2
 BOX_ORIGIN_y=(SCREEN_HEIGHT-SCREEN_WIDTH)+BOX_ORIGIN_x
@@ -49,7 +51,6 @@ COLOR_DICT={ "0":(201, 189, 177),
             "512":(239, 160, 74),
             "1024":(237, 197, 63),
             "2048":(238, 194, 46)}
-
 
 
 class TILE(pygame.sprite.Sprite):
@@ -141,12 +142,14 @@ class SCORE_BOARD(GAME_BOX):
         self.set_fonts()
         self.loc_x=self.loc_y=0
         self.loc_width=self.loc_height=0
+        self.run_number=1
         super().__init__(display_surface)
     def set_fonts(self):
         if not pygame.font.get_init():
             pygame.font.init()
         self.score_font= pygame.font.SysFont('freesans', 60)
         self.icon_font= pygame.font.SysFont('freesans', 20)
+        self.small_font= pygame.font.SysFont('freesans', 15)
         
     
     def get_score(self):
@@ -169,7 +172,10 @@ class SCORE_BOARD(GAME_BOX):
         self.loc_height=self.loc_y+refreshImageRect.height
         text=  "{:^}".format("Restart?")        
         refreshText=self.icon_font.render(text, False, WHITE)
-        self.icon_box.blit(refreshText,(10,20))
+        self.icon_box.blit(refreshText,(10,10))
+        text=  "Episode  {:04d}".format(self.run_number)        
+        refreshText=self.small_font.render(text, False, RED)
+        self.icon_box.blit(refreshText,(10,30))
     
     def update_score(self):
         self.get_score()
@@ -221,26 +227,24 @@ class GAME():
     def __init__(self):
         # Create an SCREEN_WIDTH X SCREEN_HEIGHT sized screen
         print("Initialized {}()".format(self.__class__.__name__))
+        self.running=True
+        self.reset()
         
-        if not pygame.get_init():
+        if all([not pygame.get_init(),GAME_MODE=="live"]):
             # Call this function so the Pygame library can initialize itself
             pygame.init()
-        if pygame.get_init():
-            self.running=True
-            pygame.display.set_caption('2048')
-        else:
-            print("Error!! - Unable to initialize pygame")
-            raise EnvironmentError
-        self.screen = pygame.display.set_mode([SCREEN_WIDTH, SCREEN_HEIGHT])
-        self.screen.fill(BACKGROUND)
-        self.game_box=GAME_BOX(self.screen)
-        self.game_box.show()
-        self.score_board=SCORE_BOARD(self.screen)
-        self.tile_group=TILES()
-        self.initialize_game_state()
-        self.seed()
-        self.need_random_tile=False
-        #self.reset=self.refresh # copy of refresh command
+            if pygame.get_init():
+                pygame.display.set_caption('2048')
+                self.screen = pygame.display.set_mode([SCREEN_WIDTH, SCREEN_HEIGHT])
+                self.screen.fill(BACKGROUND)
+                self.game_box=GAME_BOX(self.screen)
+                self.game_box.show()
+                self.score_board=SCORE_BOARD(self.screen)
+                self.tile_group=TILES()
+            else:
+                print("Error!! - Unable to initialize pygame")
+                raise EnvironmentError
+
         
         
     def step(self, action):
@@ -261,7 +265,8 @@ class GAME():
                 
             action = input action is expected to be one of [0,1,2,3]
         '''
-
+        initial_max_value= max(self.game_state.flatten())
+        initial_sum_value=np.sum(self.game_state)
         if action==0:
             self.move_left()
         elif action==1:
@@ -270,33 +275,37 @@ class GAME():
             self.move_down()
         elif action==3:
             self.move_up()        
-            
-            
-        reward = max(self.game_state.flatten())
-        dead = not self.running
+        
         self.update_view()
+        reward = max(self.game_state.flatten())-initial_max_value
+        sum_val=np.sum(self.game_state)
+        reward=sum_val-initial_sum_value
+        dead = not self.running
         return self.get_state(),reward,dead,None
         pass
     
     def get_state(self):
         state_list=self.game_state.flatten()
-        game_state=[i for i,v in enumerate(state_list) if v==max(state_list)][0]
-        return game_state
+        maxVIndex= [i for i,v in enumerate(state_list) if v==max(state_list)]
+        return self.game_state.flatten()
     
     def initialize_game_state(self):
         self.game_state=np.zeros((NUMBER_OF_TILE,NUMBER_OF_TILE))
         self.game_state=self.game_state.astype(int)
         self.running=True
+        self.win=False
         
     
     def reset(self):
-        pygame.event.pump()
-        self.game_box.banner=""
-        self.game_box.game_over()
+        
+        if GAME_MODE=="live":
+            self.game_box.banner=""
+            self.game_box.game_over()
+        
         self.initialize_game_state()
         self.seed()
         self.need_random_tile=False
-        pygame.display.update()
+        self.update_view()
         return self.get_state()
     
     def action_space_sample(self):
@@ -311,38 +320,49 @@ class GAME():
         max_v=np.amax(self.game_state)
         if max_v!=2:
             self.score=max_v
-        self.score_board.score=self.score
+        if GAME_MODE=="live":
+            self.score_board.score=self.score
         
     def quit(self):
         self.running=False
-        pygame.quit()
+        if GAME_MODE=="live":
+            pygame.quit()
     
     def update_view(self):
         self.update_game_score()
-        self.tile_group.empty()
-        for row in range(NUMBER_OF_TILE):
-            for col in range(NUMBER_OF_TILE):
-                self.tile_group.add(row,col,self.game_state[row,col])
-        self.tile_group.draw(self.screen)
-        self.score_board.update_score()
-        pygame.display.update()
+        self.check_game_status()
+        if GAME_MODE=="live":
+            pygame.event.pump()
+            self.tile_group.empty()
+            for row in range(NUMBER_OF_TILE):
+                for col in range(NUMBER_OF_TILE):
+                    self.tile_group.add(row,col,self.game_state[row,col])
+            self.tile_group.draw(self.screen)
+            self.score_board.update_score()
+            pygame.display.update()
             
     def check_game_status(self):
         #print("np.all(self.game_state): {}".format(np.all(self.game_state)))
         
+        # --- model---
         if self.score==2048:
-            self.game_box.banner="You Won!"
-            self.game_box.game_over()
             self.running=False
             self.win=True
         elif np.all(self.game_state):
             if all([np.amin(np.absolute(np.diff(self.game_state,axis=1)))>0,
                     np.amin(np.absolute(np.diff(self.game_state,axis=0)))>0]):
-                self.game_box.game_over()
                 self.running=False
                 self.win=False
-            else:
-                print("Moves Available!")
+
+        # --- view ---
+        if GAME_MODE=="live":
+            if self.score==2048:
+                self.game_box.banner="You Won!"
+                self.game_box.game_over()
+            elif np.all(self.game_state):
+                if all([np.amin(np.absolute(np.diff(self.game_state,axis=1)))>0,
+                        np.amin(np.absolute(np.diff(self.game_state,axis=0)))>0]):
+                    self.game_box.game_over()
         return self.win
             
                 
@@ -356,7 +376,6 @@ class GAME():
                 iterator+=1
                 continue
             elif np.all(self.game_state):
-                self.game_box.game_over()
                 self.running=False
                 self.win=False                
                 break
@@ -422,7 +441,6 @@ class GAME():
                     continue
 
             row+=1
-            self.update_view()
         
     def collect_right(self):
         # update game_state
@@ -451,7 +469,6 @@ class GAME():
                     continue
 
             row+=1
-            self.update_view()
 
 
     def collect_down(self):
@@ -480,7 +497,6 @@ class GAME():
                     #row-=1
                     continue
             col+=1
-            self.update_view()
 
 
     def collect_up(self):
@@ -509,7 +525,6 @@ class GAME():
                     #row-=1
                     continue
             col+=1
-            self.update_view()
 
 
 
@@ -549,15 +564,12 @@ def debug():
     game=GAME()
     pass
 
-#if GAME_MODE=="live":
-#    pygame.quit()
-
-# if __name__=="__main__":
-#     if GAME_MODE=="live":
-#         main()
-#     elif GAME_MODE=="debug":
-#         print("Loaded the class for debugging")
-#         debug()
+if __name__=="__main__":
+    if GAME_MODE=="live":
+        main()
+    elif GAME_MODE=="debug":
+        print("Loaded the class for debugging")
+        debug()
 
 
 
