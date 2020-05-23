@@ -3,6 +3,8 @@ import os
 import pygame
 from random import randrange
 import numpy as np
+import logging
+from debug import timethis, logged
 
 #import ConfigParser
 
@@ -224,6 +226,8 @@ class GAME():
     running=False
     win=True
     score=0
+    @timethis
+    @logged(logging.DEBUG)
     def __init__(self):
         # Create an SCREEN_WIDTH X SCREEN_HEIGHT sized screen
         print("Initialized {}()".format(self.__class__.__name__))
@@ -246,7 +250,7 @@ class GAME():
                 raise EnvironmentError
 
         
-        
+    @logged(logging.DEBUG)        
     def step(self, action):
         '''
             creating step command similar to Q-Learning.
@@ -284,11 +288,13 @@ class GAME():
         return self.get_state(),reward,dead,None
         pass
     
+    @logged(logging.DEBUG)        
     def get_state(self):
         state_list=self.game_state.flatten()
         maxVIndex= [i for i,v in enumerate(state_list) if v==max(state_list)]
         return self.game_state.flatten()
     
+    @logged(logging.DEBUG)        
     def initialize_game_state(self):
         self.game_state=np.zeros((NUMBER_OF_TILE,NUMBER_OF_TILE))
         self.game_state=self.game_state.astype(int)
@@ -296,26 +302,31 @@ class GAME():
         self.win=False
         
     
+    @logged(logging.DEBUG)        
     def reset(self):
         
         if GAME_MODE=="live":
             self.game_box.banner=""
             self.game_box.game_over()
         
+        self.need_random_tile=True
         self.initialize_game_state()
         self.seed()
-        self.need_random_tile=False
         self.update_view()
         return self.get_state()
     
+    @logged(logging.DEBUG)        
     def action_space_sample(self):
         return randrange(4)
     
+    @logged(logging.DEBUG)        
     def seed(self):
         self.add_random_tile() # first random tile
         self.add_random_tile() # second random tile
+        self.need_random_tile=True
         self.update_view()
     
+    @logged(logging.DEBUG)        
     def update_game_score(self):
         max_v=np.amax(self.game_state)
         if max_v!=2:
@@ -323,11 +334,13 @@ class GAME():
         if GAME_MODE=="live":
             self.score_board.score=self.score
         
+    @logged(logging.DEBUG)        
     def quit(self):
         self.running=False
         if GAME_MODE=="live":
             pygame.quit()
     
+    @logged(logging.DEBUG)        
     def update_view(self):
         self.update_game_score()
         self.check_game_status()
@@ -341,6 +354,7 @@ class GAME():
             self.score_board.update_score()
             pygame.display.update()
             
+    @logged(logging.DEBUG)        
     def check_game_status(self):
         #print("np.all(self.game_state): {}".format(np.all(self.game_state)))
         
@@ -367,55 +381,101 @@ class GAME():
             
                 
     
+    @logged(logging.DEBUG)        
     def add_random_tile(self):
-        iterator=0
-        while True:
-            r=randrange(4)
-            c=randrange(4)
-            if self.game_state[r,c]!=0:
-                iterator+=1
-                continue
-            elif np.all(self.game_state):
-                self.running=False
-                self.win=False                
-                break
-            else:
-                self.game_state[r,c]=2
-                break
-
-
+        '''If random tiles are needed - add a random tile'''
+        if self.need_random_tile:
+            iterator=0
+            while True:
+                r=randrange(4)
+                c=randrange(4)
+                if self.game_state[r,c]!=0:
+                    iterator+=1
+                    continue
+                elif np.all(self.game_state):
+                    self.running=False
+                    self.win=False                
+                    break
+                else:
+                    self.game_state[r,c]=2
+                    break
+    
 #---------------Movements-------------------------------------------------
+
+    
+    @logged(logging.DEBUG)        
     def move_left(self):
         self.collect_left()
-        if self.need_random_tile:
-            self.add_random_tile()
-            self.need_random_tile=False
+        self.add_random_tile()
+        self.need_random_tile=False
         self.update_view()
 
     def move_right(self):
         self.collect_right()
-        if self.need_random_tile:
-            self.add_random_tile()
-            self.need_random_tile=False
+        self.add_random_tile()
+        self.need_random_tile=False
         self.update_view()
 
     def move_down(self):
         self.collect_down()
-        if self.need_random_tile:
-            self.add_random_tile()
-            self.need_random_tile=False
+        self.add_random_tile()
+        self.need_random_tile=False
         self.update_view()
 
     def move_up(self):
         self.collect_up()
-        if self.need_random_tile:
-            self.add_random_tile()
-            self.need_random_tile=False
+        self.add_random_tile()
+        self.need_random_tile=False
         self.update_view()
 
+    def move(self,axis=0, direction=-1):
+        pass
+
+    def collect(self,axis=0, direction=-1):
+        '''axis=0 - row
+           axis=1 - col
+           direction = -1 (left,up)
+           direction = 1 (right,down)
+           
+           so collect(0,-1) - collect_left()
+           and so on
+        '''
+        arr=self.game_state
+        if axis==1:
+            arr=arr.transpose() # rows to column
+        
+        if direction==1:
+            arr=np.flip(arr,axis=0)# flip for direction
+        
+        row=0
+        while row<NUMBER_OF_TILE:
+            col=0
+            while col<NUMBER_OF_TILE-1:
+                
+                if not np.any(self.game_state[row,:]):
+                    break                
+                elif all([self.game_state[row,col]==0, 
+                          self.game_state[row,col-direction]>0]):
+                    self.game_state[row,col]=self.game_state[row,col-direction]
+                    self.game_state[row,col-direction]=0
+                    self.need_random_tile=True
+                    self.collect(axis,direction)
+                elif all([self.game_state[row,col]==self.game_state[row,col-direction],
+                          self.game_state[row,col-direction]>0]):
+                    self.game_state[row,col]*=2
+                    self.game_state[row,col-direction]=0
+                    self.need_random_tile=True
+                    self.collect(axis,direction)
+                else:
+                    col+=1
+                    #row-=1
+                    continue
+
+            row+=1
+        pass
 
     def collect_left(self):
-        # update game_state
+        ''' update game_state '''
         row=0
         while row<NUMBER_OF_TILE:
             col=0
