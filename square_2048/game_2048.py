@@ -23,8 +23,8 @@ SCREEN_HEIGHT=600
 BOX_WIDTH=360
 BOX_HEIGHT=BOX_WIDTH
 #GAME_MODE="live"
-#GAME_MODE="debug"
-GAME_MODE="training"
+GAME_MODE="debug"
+#GAME_MODE="training"
 
 BOX_ORIGIN_x=(SCREEN_WIDTH-BOX_WIDTH)/2
 BOX_ORIGIN_y=(SCREEN_HEIGHT-SCREEN_WIDTH)+BOX_ORIGIN_x
@@ -221,19 +221,20 @@ class TILES(pygame.sprite.Group):
 
 
 #=========================Main Game========================================
-class GAME():
-    number_of_tiles=NUMBER_OF_TILE
-    running=False
-    win=True
-    score=0
+class Game_2048():
+    """
+    Game class for 2048
+    """
+
     @timethis
     @logged(logging.DEBUG)
     def __init__(self):
         # Create an SCREEN_WIDTH X SCREEN_HEIGHT sized screen
         print("Initialized {}()".format(self.__class__.__name__))
+        self.number_of_tiles=NUMBER_OF_TILE
         self.running=True
-        self.reset()
-        
+        self.score=0
+        print("GAME_MODE - {}".format(GAME_MODE))
         if all([not pygame.get_init(),GAME_MODE=="live"]):
             # Call this function so the Pygame library can initialize itself
             pygame.init()
@@ -248,6 +249,49 @@ class GAME():
             else:
                 print("Error!! - Unable to initialize pygame")
                 raise EnvironmentError
+
+        self.reset()
+    
+    def roll_left(self,arr):
+        """
+        Moves any given array to the left.
+        The game_state is manipulated by feeding an appropriately transformed form.
+
+        Parameters
+        ----------
+        arr : TYPE
+            DESCRIPTION.
+
+        Returns
+        -------
+        arr : TYPE
+            DESCRIPTION.
+
+        """
+        row=0
+        while row<np.size(arr,0):
+            col=0
+            while col<np.size(arr,1)-1:
+                
+                if not np.any(arr[row,:]):
+                    break                
+                elif all([arr[row,col]==0, 
+                          arr[row,col+1]>0]):
+                    arr[row,col]=arr[row,col+1]
+                    arr[row,col+1]=0
+                    self.roll_left(arr)
+                elif all([arr[row,col]==arr[row,col+1],
+                          arr[row,col+1]>0]):
+                    arr[row,col]*=2
+                    # enable random tile creation
+                    self.need_random_tile=True
+                    arr[row,col+1]=0
+                    self.roll_left(arr)
+                else:
+                    col+=1
+                    continue
+            row+=1
+        return arr
 
         
     @logged(logging.DEBUG)        
@@ -271,21 +315,31 @@ class GAME():
         '''
         initial_max_value= max(self.game_state.flatten())
         initial_sum_value=np.sum(self.game_state)
-        if action==0:
-            self.move_left()
-        elif action==1:
-            self.move_right()
-        elif action==2:
-            self.move_down()
-        elif action==3:
-            self.move_up()        
         
+        if self.current_move != action:
+            self.need_random_tile=True
+            self.current_move=action
+        
+        self.move(action)
+        self.add_random_tile()
+        self.need_random_tile=False
         self.update_view()
         reward = max(self.game_state.flatten())-initial_max_value
         sum_val=np.sum(self.game_state)
         reward=sum_val-initial_sum_value
+        reward=sum_val
         dead = not self.running
-        return self.get_state(),reward,dead,None
+        
+        return self.get_state_list(),reward,dead,None
+        pass
+    
+    def get_state_list(self):
+        game_list=self.game_state.flatten().tolist()
+        max_list=[list((i,v)) for i,v in enumerate(game_list) if v==max(game_list)]
+        max_list=[item for sublist in max_list for item in sublist]
+        if len(max_list)<4:
+            max_list[2:4]=[0]*2
+        return max_list[0:4]
         pass
     
     @logged(logging.DEBUG)        
@@ -304,16 +358,16 @@ class GAME():
     
     @logged(logging.DEBUG)        
     def reset(self):
-        
         if GAME_MODE=="live":
             self.game_box.banner=""
             self.game_box.game_over()
-        
+            
+        self.current_move=-1
         self.need_random_tile=True
         self.initialize_game_state()
         self.seed()
         self.update_view()
-        return self.get_state()
+        return self.get_state_list()
     
     @logged(logging.DEBUG)        
     def action_space_sample(self):
@@ -354,10 +408,16 @@ class GAME():
             self.score_board.update_score()
             pygame.display.update()
             
+
     @logged(logging.DEBUG)        
     def check_game_status(self):
-        #print("np.all(self.game_state): {}".format(np.all(self.game_state)))
-        
+        """
+        Check Game Status
+        Returns Boolean
+        -------
+        TYPE
+            DESCRIPTION.
+        """
         # --- model---
         if self.score==2048:
             self.running=False
@@ -383,7 +443,12 @@ class GAME():
     
     @logged(logging.DEBUG)        
     def add_random_tile(self):
-        '''If random tiles are needed - add a random tile'''
+        """
+        If random tiles are needed - add a random tile
+        Returns
+        -------
+        None.
+        """
         if self.need_random_tile:
             iterator=0
             while True:
@@ -401,212 +466,63 @@ class GAME():
                     break
     
 #---------------Movements-------------------------------------------------
+    def move(self,direction_val):
+        """
+        Parameters
+        ----------
+        direction_val : integer
+            DESCRIPTION.
+            0=left
+            1=right
+            2=down
+            3=up
 
-    
-    @logged(logging.DEBUG)        
-    def move_left(self):
-        self.collect_left()
-        self.add_random_tile()
-        self.need_random_tile=False
-        self.update_view()
-
-    def move_right(self):
-        self.collect_right()
-        self.add_random_tile()
-        self.need_random_tile=False
-        self.update_view()
-
-    def move_down(self):
-        self.collect_down()
-        self.add_random_tile()
-        self.need_random_tile=False
-        self.update_view()
-
-    def move_up(self):
-        self.collect_up()
-        self.add_random_tile()
-        self.need_random_tile=False
-        self.update_view()
-
-    def move(self,axis=0, direction=-1):
-        pass
-
-    def collect(self,axis=0, direction=-1):
-        '''axis=0 - row
-           axis=1 - col
-           direction = -1 (left,up)
-           direction = 1 (right,down)
-           
-           so collect(0,-1) - collect_left()
-           and so on
-        '''
+        Returns
+        -------
+        None.
+        """
+        direction_list=["left","right","down","up"]
+        direction=direction_list[direction_val]
+        
         arr=self.game_state
-        if axis==1:
-            arr=arr.transpose() # rows to column
         
-        if direction==1:
-            arr=np.flip(arr,axis=0)# flip for direction
+        if direction=="up":
+            arr=np.transpose(arr)
+        elif direction=="down":
+            arr=np.flip(np.transpose(arr),axis=1)
+        elif direction=='right':
+            arr=np.flip(arr,axis=1)
+        #----------------------------------------
+        arr=self.roll_left(arr)
+        #----------------------------------------
+        if direction=="up":
+            arr=np.transpose(arr)
+        elif direction=="down":
+            arr=np.transpose(np.flip(arr,axis=1))
+        elif direction=='right':
+            arr=np.flip(arr,axis=1)
         
-        row=0
-        while row<NUMBER_OF_TILE:
-            col=0
-            while col<NUMBER_OF_TILE-1:
-                
-                if not np.any(self.game_state[row,:]):
-                    break                
-                elif all([self.game_state[row,col]==0, 
-                          self.game_state[row,col-direction]>0]):
-                    self.game_state[row,col]=self.game_state[row,col-direction]
-                    self.game_state[row,col-direction]=0
-                    self.need_random_tile=True
-                    self.collect(axis,direction)
-                elif all([self.game_state[row,col]==self.game_state[row,col-direction],
-                          self.game_state[row,col-direction]>0]):
-                    self.game_state[row,col]*=2
-                    self.game_state[row,col-direction]=0
-                    self.need_random_tile=True
-                    self.collect(axis,direction)
-                else:
-                    col+=1
-                    #row-=1
-                    continue
-
-            row+=1
+        self.game_state=arr
         pass
-
-    def collect_left(self):
-        ''' update game_state '''
-        row=0
-        while row<NUMBER_OF_TILE:
-            col=0
-            while col<NUMBER_OF_TILE-1:
-                
-                if not np.any(self.game_state[row,:]):
-                    break                
-                elif all([self.game_state[row,col]==0, 
-                          self.game_state[row,col+1]>0]):
-                    self.game_state[row,col]=self.game_state[row,col+1]
-                    self.game_state[row,col+1]=0
-                    self.need_random_tile=True
-                    self.collect_left()
-                elif all([self.game_state[row,col]==self.game_state[row,col+1],
-                          self.game_state[row,col+1]>0]):
-                    self.game_state[row,col]*=2
-                    self.game_state[row,col+1]=0
-                    self.need_random_tile=True
-                    self.collect_left()
-                else:
-                    col+=1
-                    #row-=1
-                    continue
-
-            row+=1
-        
-    def collect_right(self):
-        # update game_state
-        row=0
-        while row<NUMBER_OF_TILE:
-            col=NUMBER_OF_TILE-1
-            while col>0:
-                
-                if not np.any(self.game_state[row,:]):
-                    break                
-                elif all([self.game_state[row,col]==0, 
-                          self.game_state[row,col-1]>0]):
-                    self.game_state[row,col]=self.game_state[row,col-1]
-                    self.game_state[row,col-1]=0
-                    self.need_random_tile=True
-                    self.collect_right()
-                elif all([self.game_state[row,col]==self.game_state[row,col-1],
-                          self.game_state[row,col-1]>0]):
-                    self.game_state[row,col]*=2
-                    self.game_state[row,col-1]=0
-                    self.need_random_tile=True
-                    self.collect_right()
-                else:
-                    col-=1
-                    #row-=1
-                    continue
-
-            row+=1
-
-
-    def collect_down(self):
-        # update game_state
-        col=0
-        while col<NUMBER_OF_TILE:
-            row=NUMBER_OF_TILE-1
-            while row>0:
-                
-                if not np.any(self.game_state[:,col]):
-                    break                
-                elif all([self.game_state[row,col]==0, 
-                          self.game_state[row-1,col]>0]):
-                    self.game_state[row,col]=self.game_state[row-1,col]
-                    self.game_state[row-1,col]=0
-                    self.need_random_tile=True
-                    self.collect_down()
-                elif all([self.game_state[row,col]==self.game_state[row-1,col],
-                          self.game_state[row-1,col]>0]):
-                    self.game_state[row,col]*=2
-                    self.game_state[row-1,col]=0
-                    self.need_random_tile=True
-                    self.collect_down()
-                else:
-                    row-=1
-                    #row-=1
-                    continue
-            col+=1
-
-
-    def collect_up(self):
-        # update game_state
-        col=0
-        while col<NUMBER_OF_TILE:
-            row=0
-            while row<NUMBER_OF_TILE-1:
-                
-                if not np.any(self.game_state[:,col]):
-                    break                
-                elif all([self.game_state[row,col]==0, 
-                          self.game_state[row+1,col]>0]):
-                    self.game_state[row,col]=self.game_state[row+1,col]
-                    self.game_state[row+1,col]=0
-                    self.need_random_tile=True
-                    self.collect_up()
-                elif all([self.game_state[row,col]==self.game_state[row+1,col],
-                          self.game_state[row+1,col]>0]):
-                    self.game_state[row,col]*=2
-                    self.game_state[row+1,col]=0
-                    self.need_random_tile=True
-                    self.collect_up()
-                else:
-                    row+=1
-                    #row-=1
-                    continue
-            col+=1
-
-
 
 
 def main():
     clock = pygame.time.Clock()
-    game=GAME()
-    
+    game=Game_2048()
+    move_list=[pygame.K_LEFT,
+               pygame.K_RIGHT,
+               pygame.K_DOWN,
+               pygame.K_UP]
     
     while game.running and GAME_MODE=="live":
         for e in pygame.event.get():
             if e.type == pygame.QUIT:
                 game.running = 0
             elif e.type == pygame.KEYDOWN:
-                if e.key == pygame.K_LEFT:
-                    game.move_left()
-                if e.key == pygame.K_RIGHT:
-                    game.move_right()
-                if e.key == pygame.K_UP:
-                    game.move_up()
-                if e.key == pygame.K_DOWN:
-                    game.move_down()
+                try:
+                    game.step(move_list.index(e.key))
+                except:
+                    print("This movement for key {} not defined".format(e.key))
             elif e.type == pygame.MOUSEBUTTONDOWN:
                 pos=pygame.mouse.get_pos()
                 if game.score_board.isOver(pos):
@@ -621,7 +537,7 @@ def main():
 
 def debug():
     clock = pygame.time.Clock()
-    game=GAME()
+    game=Game_2048()
     pass
 
 if __name__=="__main__":
@@ -630,9 +546,4 @@ if __name__=="__main__":
     elif GAME_MODE=="debug":
         print("Loaded the class for debugging")
         debug()
-
-
-
-
- 
 
