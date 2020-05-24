@@ -1,0 +1,12 @@
+{
+
+    "screen_size": {
+                    "small": [65, 50], 
+                    "medium": [80, 60], 
+                    "large": [100, 80]
+                    },
+    "snake_size": [10,5] 
+    
+    
+}
+
