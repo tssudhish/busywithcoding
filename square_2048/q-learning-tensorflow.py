@@ -44,7 +44,7 @@ class Agent:
                  epsilon_i=1.0, 
                  epsilon_f=0.0, 
                  n_epsilon=0.1, 
-                 alpha=0.5, 
+                 alpha=0.1, 
                  gamma = 0.95,
                  hidden_layers = []
                 ):
@@ -105,6 +105,19 @@ class Agent:
             self.epsilon_i - (n/self.n_epsilon)*(self.epsilon_i - self.epsilon_f))
     
     def act(self, s_t):
+        """
+        
+
+        Parameters
+        ----------
+        s_t : TYPE
+            DESCRIPTION.
+
+        Returns
+        -------
+        None.
+
+        """
 #         print("np.random.rand(): {} < self.epsilon: {}".format(np.random.rand(),self.epsilon))
         action=-1
         if np.random.rand() < self.epsilon:
@@ -215,6 +228,7 @@ from importlib import reload
 import game_2048
 game_2048.GAME_MODE='training'
 env =game_2048.Game_2048()
+
 train(env, T=1000)
 
 

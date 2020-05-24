@@ -324,13 +324,17 @@ class Game_2048():
         self.add_random_tile()
         self.need_random_tile=False
         self.update_view()
+        action_list=[0]*4
+        action_list[action]=1
         reward = max(self.game_state.flatten())-initial_max_value
         sum_val=np.sum(self.game_state)
         reward=sum_val-initial_sum_value
         reward=sum_val
+        game_state_list=self.game_state.flatten().tolist()
+        game_state_list.extend(action_list)
         dead = not self.running
         
-        return self.get_state_list(),reward,dead,None
+        return self.game_state.flatten(),reward,dead,None
         pass
     
     def get_state_list(self):
@@ -367,7 +371,10 @@ class Game_2048():
         self.initialize_game_state()
         self.seed()
         self.update_view()
-        return self.get_state_list()
+        action_list=[0]*4
+        game_state_list=self.game_state.flatten().tolist()
+        game_state_list.extend(action_list)        
+        return self.game_state.flatten()
     
     @logged(logging.DEBUG)        
     def action_space_sample(self):
