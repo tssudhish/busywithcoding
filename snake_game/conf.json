@@ -1,0 +1,17 @@
+{ 
+"screen_size": {
+    "small": [650, 500], 
+    "medium": [800, 600], 
+    "large": [1000, 800]
+    },
+"snake_size": [10, 5], 
+"color": {
+    "black": [0, 0, 0], 
+    "white": [255, 255, 255], 
+    "red": [255, 0, 0], 
+    "background": [251, 248, 239], 
+    "boxbackground": [177, 181, 180], 
+    "snake_color": [238, 228, 218]
+    }, 
+"FPS": 60
+}
