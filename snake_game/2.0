@@ -1,0 +1,4 @@
+Collecting pygame
+  Downloading https://files.pythonhosted.org/packages/a8/1e/5da797179ce046decc7d6d57a9b1977218103ccfb099b959b7736aff5f73/pygame-1.9.6-cp38-cp38-win_amd64.whl (4.8MB)
+Collecting version
+  Downloading https://files.pythonhosted.org/packages/fd/b6/fa3b2c859d4d8817a106e4272029d78a2afbca0a27139997a4e5515bbf60/version-0.1.1.tar.gz
