@@ -154,10 +154,26 @@ class Food(pygame.surface.Surface):
  #
 class Snake(pygame.sprite.Group):
     location_list=[]
+    rotate_left      = np.array([[0,-1],[1,0]])
+    rotate_right     = np.array([[0,1],[-1,0]])
    
     def __init__(self,h_loc,direction,num_segment):
+        """
+        a Snake class which has all attributes and methods describing a snake.
+        1. Size of the snake - number of segments/length of segments
+        2. location of each of the segments
+        3. move one step in a given direction
+            a. head moves in a specific direction
+            b. rest of the bodies just start occupying the spaces of previous body
+        4. grow in size.
+            a. growth happens at the head. by creating a segment located at the same
+               place as that of the head. then when the head has moved forward it appears.
+        5. head can crash into other sprites and bodies and should be checked.
+        """
         super(pygame.sprite.Group,self).__init__()
-        self.head_location=h_loc # np.array([x,y])
+#        print(f"Head Location {h_loc}")
+#        print(f"Direction {direction}")
+        self.head_location=np.array(h_loc) # np.array([x,y])
         self.direction=direction # initial snake will move to the right
         self.num_segment=num_segment
         self.initialize_location_list()
@@ -170,6 +186,14 @@ class Snake(pygame.sprite.Group):
             location_segment=np.subtract(location_segment,self.direction)
             self.location_list.append(location_segment)
     
+    def turn_head(self,left=True):
+        if left:
+            rotate_direction = self.rotate_left
+        else:
+            rotate_direction=self.rotate_right
+        self.direction=self.direction.dot(rotate_direction)
+        
+
     def move_head_forward(self):
         self.location_list[0]=np.add(self.location_list[0],self.direction)
         
@@ -190,12 +214,14 @@ class Snake(pygame.sprite.Group):
     def grow(self):
         pass
     
-    def collide(self,entity):
+    def crash(self,sprite_entity):
         pass
     
     def add_segment(self,segment_index):
-        self.location_list.insert(1,self.location_list[0]) # add a segment at the location same as the head
-        
+        self.location_list.insert(segment_index,self.location_list[0]) # add a segment at the location same as the head
+        s=Segment(self.location_list[segment_index])
+        s.setimage()
+        self.add(s)
         pass
 
     def initialize_snake_segments(self):
@@ -245,8 +271,6 @@ class Snake(pygame.sprite.Group):
             
 class Snake_Game(gym.Env):
     metadata = {'render.modes': ['human']}
-    rotate_left      = np.array([[0,-1],[1,0]])
-    rotate_right     = np.array([[0,1],[-1,0]])
     scaling_factor   = 10 # Scaling
     
     def __init__(self,mode="human",size="small"):
@@ -267,15 +291,30 @@ class Snake_Game(gym.Env):
         
         pass
     
-    
+    def add_snake(self):
+        # start a snake at a location at least 5 units away from 
+        snake_seed=tuple(self.scaling_factor*np.random.randint(5,
+                                                         sg.observation_space.high[0],
+                                                         size=2,
+                                                         dtype='int'))
+        snake_direction=tuple(self.scaling_factor*np.array([1,0]))# snake is horizontal
+        self.snake=Snake(snake_seed,snake_direction,5)
+        
+    def add_food(self):
+        self.food_location=self.scaling_factor*self.observation_space.sample() # 10 is the scaling factor
+        self.food=Food(self.food_location)
+
+    def snake_eat_food(self):
+        self.snake.location_list.insert(1,self.snake.location_list[0])
+        pass
 
     def clear_screen(self):
         self.screen.fill(data["color"]["background"])
 
+
     def move(self):
         if self.can_eat_food():             # Check if food is there to be eaten
-            self.snake.eat_food(food)
-            self.add_food()
+            self.snake.eat_food()
         self.snake.inch()                   # move forward
 
     def quit(self):
@@ -284,14 +323,10 @@ class Snake_Game(gym.Env):
     def render(self):
         self.clear_screen()                 # clear the game screen
         self.food.render(self.screen)       # show the food in the screen
-        self.snake.draw()                   # draw the snake on the screen.
-        self.move()                         # move the snake
+        self.snake.render(self.screen)      # draw the snake on the screen.
         pygame.display.update()             # update the display of the game.
         pass
         
-    def add_food(self):
-        self.food_location=self.observation_space.sample() # 10 is the scaling factor
-        self.food=Food(self.food_location)
     
     def can_eat_food(self):
         if self.snake.head_location==self.food_location:
@@ -335,107 +370,111 @@ class Snake_Game(gym.Env):
 # #                pygame.display.update()
 # #            
 # #    
-    
-def clear_screen(screen):
-    screen.fill(data["color"]["background"])
-
-def update_snake(new_loc,screen):
-    snake.sprites()[0].update_location(new_loc)
-    snake.draw(screen)    
-    pygame.display.update()
-
-def move(screen):
-    clear_screen(screen)
-    screen.blit(food,(20,50))
-    snake.draw(screen)
-    pygame.display.update()
-
-
-
+#    
+#def clear_screen(screen):
+#    screen.fill(data["color"]["background"])
+#
+#def update_snake(new_loc,screen):
+#    snake.sprites()[0].update_location(new_loc)
+#    snake.draw(screen)    
+#    pygame.display.update()
+#
+#def move(screen):
+#    clear_screen(screen)
+#    screen.blit(food,(20,50))
+#    snake.draw(screen)
+#    pygame.display.update()
+#
+#
+#
 pygame.init()
 pygame.display.set_caption('SNAKE GAME')
-screen= pygame.display.set_mode((320,300))
-screen.fill(data["color"]["background"])
 pygame.display.update()
 clock=pygame.time.Clock()
 
-random_location=np.random.randint(32, size=(1,2))*10
-food=Food(random_location)
-food.fill(data["color"]["red"])
-food.rect=food.get_rect()
-print(100,100)
-screen.blit(food,(100,100))
+sg=Snake_Game()
+sg.clear_screen()
+sg.add_snake()
 pygame.display.update()
 
-clock.tick(1)
-print(50,50)
-clear_screen(screen)
-pygame.display.update()
-clock.tick(5)
-
-
-
-snake=pygame.sprite.Group()
-
-location_list=[]
-head_location=np.array([100,100])
-direction=np.array([10,0])
-
-
-snake=Snake(head_location,direction,10)
-move(screen)
-direction=np.array([0,-10])
-snake.direction=direction
-clock=pygame.time.Clock()
-for i in range(10):
-    pygame.event.pump()
-    snake.inch()
-    snake.update_view()
-    move(screen)
-    clock.tick(5)
-
+#
+#random_location=np.random.randint(32, size=(1,2))*10
+#food=Food(random_location)
+#food.fill(data["color"]["red"])
+#food.rect=food.get_rect()
+#print(100,100)
+#screen.blit(food,(100,100))
+#pygame.display.update()
+#
+#clock.tick(1)
+#print(50,50)
+#clear_screen(screen)
+#pygame.display.update()
+#clock.tick(5)
 #
 #
 #
+#snake=pygame.sprite.Group()
+#
+#location_list=[]
+#head_location=np.array([100,100])
+#direction=np.array([10,0])
 #
 #
+#snake=Snake(head_location,direction,10)
+#move(screen)
+#direction=np.array([0,-10])
+#snake.direction=direction
+#clock=pygame.time.Clock()
+#for i in range(10):
+#    pygame.event.pump()
+#    snake.inch()
+#    snake.update_view()
+#    move(screen)
+#    clock.tick(5)
 #
+##
+##
+##
+##
+##
+##
+##
+##
+##
+##
+##
 #
+##def main():
+##   clock = pygame.time.Clock()
+##   move_list=[pygame.K_LEFT,
+##              pygame.K_RIGHT]
+##   pygame.init()
+##   game=Snake_Game()
+##   game.render()
+##   pygame.quit()
+##    game.render()
+#    # while not game.dead and game.mode=="human":
+#    #     for e in pygame.event.get():
+#    #         if e.type == pygame.QUIT:
+#    #             game.running = 0
+#    #         elif e.type == pygame.KEYDOWN:
+#    #             try:
+#    #                 game.step(move_list.index(e.key))
+#    #             except:
+#    #                 print("This movement for key {} not defined".format(e.key))
+#    #         # elif e.type == pygame.MOUSEBUTTONDOWN:
+#    #         #     pos=pygame.mouse.get_pos()
+#    #         #     if game.score_board.isOver(pos):
+#    #         #         print("clicked refresh button")
+#    #         #         game.reset()
+#    
+#    #     # game.check_game_status()
+#    #     pygame.display.update()
+#    #     clock.tick(data["FPS"])
+#    # pygame.quit()
+##   return game
 #
-#
-#
-#
-
-#def main():
-#   clock = pygame.time.Clock()
-#   move_list=[pygame.K_LEFT,
-#              pygame.K_RIGHT]
-#   pygame.init()
-#   game=Snake_Game()
-#   game.render()
-#   pygame.quit()
-#    game.render()
-    # while not game.dead and game.mode=="human":
-    #     for e in pygame.event.get():
-    #         if e.type == pygame.QUIT:
-    #             game.running = 0
-    #         elif e.type == pygame.KEYDOWN:
-    #             try:
-    #                 game.step(move_list.index(e.key))
-    #             except:
-    #                 print("This movement for key {} not defined".format(e.key))
-    #         # elif e.type == pygame.MOUSEBUTTONDOWN:
-    #         #     pos=pygame.mouse.get_pos()
-    #         #     if game.score_board.isOver(pos):
-    #         #         print("clicked refresh button")
-    #         #         game.reset()
-    
-    #     # game.check_game_status()
-    #     pygame.display.update()
-    #     clock.tick(data["FPS"])
-    # pygame.quit()
-#   return game
-
-#if __name__=="__main__":
-#    g=main()
-    # pygame.quit()
+##if __name__=="__main__":
+##    g=main()
+#    # pygame.quit()
