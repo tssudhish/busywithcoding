@@ -1,6 +1,6 @@
 { 
 "screen_size": {
-    "small": [650, 500], 
+    "small": [320, 400], 
     "medium": [800, 600], 
     "large": [1000, 800]
     },
@@ -13,5 +13,6 @@
     "boxbackground": [177, 181, 180], 
     "snake_color": [238, 228, 218]
     }, 
-"FPS": 60
+"FPS": 6,
+"INFINITE_SPACE":true
 }
