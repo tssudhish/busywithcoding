@@ -1,87 +1,86 @@
-<!DOCSTYLE html>
-<html>
-    <title>
-        My Sample Webpage
-    </title>
-    
+<!doctype html>
+<html lang="en" dir="ltr">
+    <head>
+        <title>Learn CSS</title>
+        <link href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@300&display=swap" rel="stylesheet">
+        <link rel="stylesheet" href="style.css">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script type="text/javascript" src="javascript/scripts.js"></script>
+    </head>
     <body>
-    <table>
-    <tr>
-        <td>
-            <h1>
-            My Learning Webpage
-            </h1>
-        </td>    
-        <td>
-            <img src="images/coding_splash_small.jpg"
-                 alt="My Coding Website" height="100" width="200">
-                <br>
-            <a style="background-color:black;color:white;text-decoration:none;padding:4px 6px;font-family:-apple-system, BlinkMacSystemFont, &quot;San Francisco&quot;, &quot;Helvetica Neue&quot;, Helvetica, Ubuntu, Roboto, Noto, &quot;Segoe UI&quot;, Arial, sans-serif;font-size:12px;font-weight:bold;line-height:1.2;display:inline-block;border-radius:3px" href="https://unsplash.com/@ilyapavlov?utm_medium=referral&amp;utm_campaign=photographer-credit&amp;utm_content=creditBadge" target="_blank" rel="noopener noreferrer" title="Download free do whatever you want high-resolution photos from Ilya Pavlov"><span style="display:inline-block;padding:2px 3px"><svg xmlns="http://www.w3.org/2000/svg" style="height:12px;width:auto;position:relative;vertical-align:middle;top:-2px;fill:white" viewBox="0 0 32 32"><title>unsplash-logo</title><path d="M10 9V0h12v9H10zm12 5h10v18H0V14h10v9h12v-9z"></path></svg></span><span style="display:inline-block;padding:2px 3px"> Picture by Ilya Pavlov</span></a>
-        </td>
-    </tr>    
-    </table>
-    
-        
-    <h2>
-        HTML and CSS Course
-    </h2>
-    <table
-           cellspacing=10>
-        <tr>
-            <td><a href=#>Home Page</a></td>
-            <td><a href="https://github.com/tssudhish">GitHub Page</a></td>
-            <td><a href= "https://www.udemy.com/home/my-courses/learning/">Courses Completed</a></td>
-        </tr>
-    </table>
-    
-    
-    <hr>
-    <p>
-     This is a webpage which will keep record of <i>my <b>HTML</b> and <b>CSS</b> learning</i> and also keep track of the record in github.
-    </p>
-    
-    <table border="0"
-           cellpadding="10"
-           cellspacing="1"
-           >
-        <tr>
-            <td><button>Full Stack Course</button></td>
-            <td><button>Front End Course</button></td>
-            <td><button>Backend Course</button></td>
-        </tr>
-        <tr>    
-            <td> <button> Python Course</button></td>
-            <td><button>MySQL Course</button></td>
-            <td><button>JavaScript Course</button></td>
-        </tr>
-    
-    </table>
-    <hr>
-    
-    <h2>Why Learning HTML and CSS</h2>
-    <ol>
-        <li> Entry to Web Development</li>
-        <li> Almost everythin now is an html page with css</li>
-        <li> Develop new Skill</li>
-    </ol>
-    <iframe width=400"" height="215" src="https://www.youtube.com/embed/sm2OjpnGjm4" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-    
-    
-    
-    <hr>
-    
-    <h2>Contact Us</h2>
-    <form>
-        <table>
-        <tr>First Name:</tr>
-        <tr><input type=text></tr>
-        <tr>Last Name:</tr>
-        <tr><input type=text></tr>
-        <tr>email:</tr>
-        <tr><input type=email></tr>
-        <tr><br></tr>
-        <tr><input type=submit></tr>
-        </table>
-    </form>
+        <nav>
+            <ul class="webnav" id="dropDownClick">
+                <li> <a href="index.html">Home</a></li>
+                <li> <a href="#news">News</a></li>
+                <li> <a href="#contact">Contact</a></li>
+                <li> <a href="#about">About</a></li>
+                <li> <a href="#search">Find</a></li>
+                <li> <a href="tic-tac-toe.html">Play Tic-Tac-Toe</a></li>
+                <li class="nav-right"> <a href="#signin">Sign In</a></li>
+                <li class="nav-right"> <a href="#signup">Sign Up</a></li>
+                <li class="dropDownIcon"><a href="javascript:void(0)" onclick="onDropDownClick()">&#8801;</a></li>
+            </ul>
+        </nav>
+        <main class="mainpage" >
+            <div class="container">
+                <div class="row" >
+                    <div class="col-12 title_bar" id="section-1-gradient">
+                        <h1>My Coding Website</h1>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-2" class="col-2 top-level"  >
+                        <h2 class="left-header">Left Column</h1>
+                        <article>
+                            <p>
+                                "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
+                            </p>
+                        </article>
+                    </div>
+                    <div class="col-6" class="col-6  top-level" class="container">
+                        <h2 class="middle-header">Main Column</h2>
+                        <article>
+                            <p>
+                                "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
+                            </p>
+                            <div class="videoContainer"  align="center">
+                                <iframe  width="350" height="215" src="https://www.youtube.com/embed/4A2mWqLUpzw" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen class="youtube"></iframe>
+
+                            </div>
+
+                        </article>
+                    </div>
+                    <div class="col-4" class="col-4  top-level">
+                        <h2 class="side-header">Side Column</h2>
+                        <form>
+                            <div class="leftSide-col">
+                                <div>
+                                    <h4 class="login">Username</h4>
+                                    <input class="inputbox" name="username" type="text" placeholder="Username">
+                                </div>
+                                <div>
+                                    <h4 class="login">Password</h4>
+                                    <input class="inputbox" name="password" type="password" placeholder="Password">
+                                    <br>
+                                </div>
+                                <div class="login">
+                                    <input type="submit">
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <footer>
+            <ul class="webfooter">
+                <li><em>&copy; Sudhish Kumar, 2020</em></li>
+                <li><a href="#about">About</a></li>    
+                <li><a href="#contactus">Contact Us</a></li>    
+                <li><a href="javascript:void(0)">Share</a></li>    
+            </ul>
+
+        </footer>
     </body>
 </html>
