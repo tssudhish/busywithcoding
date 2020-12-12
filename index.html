@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" dir="ltr">
+<html lang="en" dir="ltr"   class="wrapper"> 
     <head>
         <title>Learn CSS</title>
         <link href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@300&display=swap" rel="stylesheet">
@@ -9,36 +9,51 @@
     </head>
     <body>
         <nav>
-            <ul class="webnav" id="dropDownClick">
-                <li> <a href="index.html">Home</a></li>
-                <li> <a href="#news">News</a></li>
-                <li> <a href="#contact">Contact</a></li>
-                <li> <a href="#about">About</a></li>
-                <li> <a href="#search">Find</a></li>
-                <li> <a href="tic-tac-toe.html">Play Tic-Tac-Toe</a></li>
-                <li class="nav-right"> <a href="#signin">Sign In</a></li>
-                <li class="nav-right"> <a href="#signup">Sign Up</a></li>
-                <li class="dropDownIcon"><a href="javascript:void(0)" onclick="onDropDownClick()">&#8801;</a></li>
-            </ul>
+            <div class="webnav" >
+
+                <div class="left">
+                    <a href="index.html">Home</a>
+                    <a href="#news">News</a>
+                    <a href="#contact">Contact</a>
+                    <a href="#about">About</a>
+                    <a href="#search">Find</a>
+                    <a href="tic-tac-toe.html">Play Tic-Tac-Toe</a>
+
+                </div>
+
+                <div class="right">
+                    <a href="#signin">Sign In</a>
+                    <a href="#signup">Sign Up</a>
+                </div>
+
+                <div class="dropDown" id="dropDownClick" >
+                    <a href="javascript:void(0)" onclick="onDropDownClick()">&#8801;</a>
+                </div>
+            </div>
+
+
+
+
+
         </nav>
         <main class="mainpage" >
-            <div class="container">
-                <div class="row" >
-                    <div class="col-12 title_bar" id="section-1-gradient">
-                        <h1>My Coding Website</h1>
-                    </div>
+            <div class="main_block">
+                <div class="top_title">
+                    <h1>My Coding Website</h1>
+
                 </div>
-                <div class="row">
-                    <div class="col-2" class="col-2 top-level"  >
-                        <h2 class="left-header">Left Column</h1>
+
+                <div class="bot_panel">
+                    <div class="left_column">
                         <article>
                             <p>
                                 "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
                             </p>
                         </article>
+
                     </div>
-                    <div class="col-6" class="col-6  top-level" class="container">
-                        <h2 class="middle-header">Main Column</h2>
+
+                    <div class="middle_column">
                         <article>
                             <p>
                                 "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
@@ -49,9 +64,10 @@
                             </div>
 
                         </article>
+
                     </div>
-                    <div class="col-4" class="col-4  top-level">
-                        <h2 class="side-header">Side Column</h2>
+
+                    <div class="right_column">
                         <form>
                             <div class="leftSide-col">
                                 <div>
@@ -68,19 +84,32 @@
                                 </div>
                             </div>
                         </form>
+
                     </div>
+
                 </div>
+
             </div>
+
+
+
         </main>
 
         <footer>
-            <ul class="webfooter">
-                <li><em>&copy; Sudhish Kumar, 2020</em></li>
-                <li><a href="#about">About</a></li>    
-                <li><a href="#contactus">Contact Us</a></li>    
-                <li><a href="javascript:void(0)">Share</a></li>    
-            </ul>
+            <div class="footer">
 
+                <div class="copyright">
+                    <em>&copy; Sudhish Kumar, 2020</em>
+                </div>
+                <div class="middle-footer">
+
+                </div>
+                <div class="right-footer">
+                    <a href="#about">About</a>
+                    <a href="#contactus">Contact Us</a>
+                    <a href="javascript:void(0)">Share</a>               
+                </div>
+            </div>
         </footer>
     </body>
 </html>
